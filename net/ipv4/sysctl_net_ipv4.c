@@ -29,7 +29,9 @@
 
 static int zero;
 static int one = 1;
+static int three = 3;
 static int four = 4;
+static int hundred = 100;
 static int thousand = 1000;
 static int gso_max_segs = GSO_MAX_SEGS;
 static int tcp_retr1_max = 255;
@@ -1167,6 +1169,15 @@ static struct ctl_table ipv4_net_table[] = {
 		.maxlen		= sizeof(int),
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec
+	},
+	{
+		.procname       = "tcp_default_init_rwnd",
+		.data           = &init_net.ipv4.sysctl_tcp_default_init_rwnd,
+		.maxlen         = sizeof(int),
+		.mode           = 0644,
+		.proc_handler   = proc_dointvec_minmax,
+		.extra1		= &three,
+		.extra2		= &hundred,
 	},
 	{ }
 };

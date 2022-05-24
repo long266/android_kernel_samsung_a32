@@ -1046,11 +1046,15 @@ const char * const vmstat_text[] = {
 	"nr_mlock",
 	"nr_page_table_pages",
 	"nr_kernel_stack",
+#if IS_ENABLED(CONFIG_SHADOW_CALL_STACK)
+	"nr_shadow_call_stack_bytes",
+#endif
 	"nr_bounce",
 #if IS_ENABLED(CONFIG_ZSMALLOC)
 	"nr_zspages",
 #endif
 	"nr_free_cma",
+	"nr_free_rbin",
 
 	/* enum numa_stat_item counters */
 #ifdef CONFIG_NUMA
@@ -1074,6 +1078,7 @@ const char * const vmstat_text[] = {
 	"nr_isolated_file",
 	"workingset_refault",
 	"workingset_activate",
+	"workingset_restore",
 	"workingset_nodereclaim",
 	"nr_anon_pages",
 	"nr_mapped",
@@ -1090,7 +1095,7 @@ const char * const vmstat_text[] = {
 	"nr_vmscan_immediate_reclaim",
 	"nr_dirtied",
 	"nr_written",
-	"", /* nr_indirectly_reclaimable */
+	"nr_kernel_misc_reclaimable",
 
 	/* enum writeback_stat_item counters */
 	"nr_dirty_threshold",
@@ -1114,6 +1119,7 @@ const char * const vmstat_text[] = {
 
 	"pgfault",
 	"pgmajfault",
+	"pgfmfault",
 	"pglazyfreed",
 
 	"pgrefill",
@@ -1215,7 +1221,22 @@ const char * const vmstat_text[] = {
 	"swap_ra",
 	"swap_ra_hit",
 #endif
-#endif /* CONFIG_VM_EVENTS_COUNTERS */
+
+#ifdef CONFIG_ZONE_MOVABLE_CMA
+	"zmc_lru_migrated",
+	"zmc_lru_migration_nomem",
+#endif /* CONFIG_ZONE_MOVABLE_CMA */
+
+#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+	"speculative_pgfault",
+#endif
+#ifdef CONFIG_ZRAM_LRU_WRITEBACK
+	"sqzr_objcnt",
+	"sqzr_count",
+	"sqzr_read",
+	"sqzr_write",
+#endif
+#endif /* CONFIG_VM_EVENT_COUNTERS */
 };
 #endif /* CONFIG_PROC_FS || CONFIG_SYSFS || CONFIG_NUMA */
 
@@ -1671,10 +1692,6 @@ static int vmstat_show(struct seq_file *m, void *arg)
 {
 	unsigned long *l = arg;
 	unsigned long off = l - (unsigned long *)m->private;
-
-	/* Skip hidden vmstat items. */
-	if (*vmstat_text[off] == '\0')
-		return 0;
 
 	seq_puts(m, vmstat_text[off]);
 	seq_put_decimal_ull(m, " ", *l);

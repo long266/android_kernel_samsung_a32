@@ -12,7 +12,6 @@ config ARCH_HAVE_CUSTOM_GPIO_H
 
 menuconfig GPIOLIB
 	bool "GPIO Support"
-	select ANON_INODES
 	help
 	  This enables GPIO support through the generic GPIO library.
 	  You only need to enable this, if you also want to enable
@@ -572,6 +571,13 @@ config GPIO_LOONGSON1
 	select GPIO_GENERIC
 	help
 	  Say Y or M here to support GPIO on Loongson1 SoCs.
+
+config GPIO_PCAL6416A
+	bool "PCAL6416A GPIO expander"
+	depends on I2C
+	default n
+	help
+	  GPIO driver for PCAL6416A I2C-based GPIO expander.
 
 endmenu
 
@@ -1283,6 +1289,13 @@ config GPIO_XRA1403
 	  GPIO driver for EXAR XRA1403 16-bit SPI-based GPIO expander.
 
 endmenu
+
+config SEC_GPIO_DVS
+	tristate "setting Samsung GPIO debugging and verification system"
+	default n
+	help
+	  To verify gpio configurations of devices, set this feature.
+	  This feature should be enabled for user-debug mode.
 
 menu "USB GPIO expanders"
 	depends on USB

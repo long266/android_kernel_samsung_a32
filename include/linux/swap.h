@@ -304,7 +304,7 @@ struct vma_swap_readahead {
 
 /* linux/mm/workingset.c */
 void *workingset_eviction(struct address_space *mapping, struct page *page);
-bool workingset_refault(void *shadow);
+void workingset_refault(struct page *page, void *shadow);
 void workingset_activation(struct page *page);
 void workingset_update_node(struct radix_tree_node *node, void *private);
 
@@ -337,8 +337,14 @@ extern void swap_setup(void);
 
 extern void add_page_to_unevictable_list(struct page *page);
 
-extern void lru_cache_add_active_or_unevictable(struct page *page,
-						struct vm_area_struct *vma);
+extern void __lru_cache_add_active_or_unevictable(struct page *page,
+						unsigned long vma_flags);
+
+static inline void lru_cache_add_active_or_unevictable(struct page *page,
+						struct vm_area_struct *vma)
+{
+	return __lru_cache_add_active_or_unevictable(page, vma->vm_flags);
+}
 
 /* linux/mm/vmscan.c */
 extern unsigned long zone_reclaimable_pages(struct zone *zone);
@@ -616,7 +622,7 @@ static inline int split_swap_cluster(swp_entry_t entry)
 }
 #endif
 
-#ifdef CONFIG_MEMCG
+#if defined(CONFIG_MEMCG) && !defined(CONFIG_MEMCG_FORCE_USE_VM_SWAPPINESS)
 static inline int mem_cgroup_swappiness(struct mem_cgroup *memcg)
 {
 	/* Cgroup2 doesn't have per-cgroup swappiness */
